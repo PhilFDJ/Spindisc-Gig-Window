@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;">
+<title>Spinlist Gig Window</title>
+<style>
+  :root{ --neon:#c1ff2f; --ink:#e8ecf5; --muted:#8b93a7; --line:rgba(255,255,255,.1);
+         --bg:#0b1020; --surface:#121a2e; --paper:#0d1424; --ok:#39d98a; --err:#ff6b5e; }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.5}
+  .wrap{max-width:640px;margin:0 auto;padding:24px 20px 36px}
+  h1{font-size:1.4rem;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+  .logo{width:32px;height:32px;border-radius:8px;display:block;object-fit:contain}
+  .lead{color:var(--muted);font-size:.9rem;margin:0 0 18px}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;margin:14px 0}
+  h2{margin:0 0 6px;font-size:1.05rem}
+  label.f{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
+  input[type=email],input[type=password]{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:10px 12px;font:inherit}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--neon);color:#0a1228;border:none;border-radius:10px;padding:11px 18px;font:inherit;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:default}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .msg{font-size:.86rem;margin-top:10px;min-height:18px}
+  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)} .msg.muted{color:var(--muted)}
+  .hide{display:none}
+  .who{font-size:.85rem;color:var(--muted)}
+  a{color:var(--neon)}
+  .giglist{margin-top:6px}
+  .gig{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;margin:8px 0}
+  .gig .n{font-weight:700}
+  .gig .s{font-size:.8rem;color:var(--muted)}
+  .tag{font-size:.68rem;font-weight:800;padding:2px 8px;border-radius:20px;background:rgba(193,255,47,.15);color:var(--neon)}
+  .tag.ev{background:rgba(123,140,255,.18);color:#9fb0ff}
+  .search{width:100%;background:var(--paper);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:9px 12px;font:inherit;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><img class="logo" src="assets/icon.png" alt="Spinlist"> Gig Window</h1>
+  <p class="lead">Sign in, pick tonight's gig, and open a window that floats above your DJ software — no third-party pinning tools needed.</p>
+
+  <!-- LOGIN -->
+  <div class="panel" id="login-panel">
+    <h2>Sign in</h2>
+    <label class="f" for="email">Email</label>
+    <input type="email" id="email" autocomplete="username" placeholder="you@example.com">
+    <label class="f" for="password">Password</label>
+    <input type="password" id="password" autocomplete="current-password" placeholder="Your Spinlist password">
+    <div class="row">
+      <button class="btn" id="login-btn">Sign in</button>
+      <span class="who" id="login-who"></span>
+    </div>
+    <div class="msg" id="login-msg"></div>
+  </div>
+
+  <!-- GIG PICKER -->
+  <div class="panel hide" id="picker-panel">
+    <h2>Choose a gig</h2>
+    <p class="lead" style="margin:2px 0 10px">Tap a gig to open its always-on-top window. You can switch gigs any time.</p>
+    <input class="search" id="gig-search" placeholder="Search your gigs…">
+    <div class="giglist" id="gig-list"><p class="msg muted">Loading your gigs…</p></div>
+    <div class="row">
+      <button class="btn ghost" id="refresh-btn">↻ Refresh</button>
+      <button class="btn ghost" id="signout-btn">Sign out</button>
+    </div>
+    <div class="msg muted" id="picker-msg" style="margin-top:12px">Tip: if your DJ software runs truly full-screen, put it in a normal (windowed) mode so the gig window can stay on top.</div>
+  </div>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>
