@@ -1,8 +1,8 @@
 {
   "name": "spinlist-gig-window",
   "productName": "Spinlist Gig Window",
-  "version": "1.1.0",
-  "description": "A floating, always-on-top gig window for Spinlist - your night's key info, timeline and music, pinned above your DJ software.",
+  "version": "1.1.1",
+  "description": "A floating, always-on-top gig window for Spinlist \u2014 your night's key info, timeline and music, pinned above your DJ software.",
   "author": "Spinlist",
   "license": "UNLICENSED",
   "main": "main.js",
