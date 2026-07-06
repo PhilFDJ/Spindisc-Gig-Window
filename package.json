@@ -1,8 +1,8 @@
 {
   "name": "spinlist-gig-window",
   "productName": "Spinlist Gig Window",
-  "version": "1.0.0",
-  "description": "A floating, always-on-top gig window for Spinlist — your night's key info, timeline and music, pinned above your DJ software.",
+  "version": "1.1.0",
+  "description": "A floating, always-on-top gig window for Spinlist \u2014 your night's key info, timeline and music, pinned above your DJ software.",
   "author": "Spinlist",
   "license": "UNLICENSED",
   "main": "main.js",
@@ -29,13 +29,27 @@
     "mac": {
       "category": "public.app-category.music",
       "target": [
-        { "target": "dmg", "arch": "universal" },
-        { "target": "zip", "arch": "universal" }
+        {
+          "target": "dmg",
+          "arch": "universal"
+        },
+        {
+          "target": "zip",
+          "arch": "universal"
+        }
       ],
-      "icon": "assets/icon.icns"
+      "icon": "assets/icon.icns",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "notarize": true
     },
     "win": {
-      "target": ["nsis", "zip"],
+      "target": [
+        "nsis",
+        "zip"
+      ],
       "icon": "assets/icon.ico"
     },
     "nsis": {
@@ -46,7 +60,9 @@
       "shortcutName": "Spinlist Gig Window"
     },
     "linux": {
-      "target": ["AppImage"],
+      "target": [
+        "AppImage"
+      ],
       "category": "Audio"
     }
   }
