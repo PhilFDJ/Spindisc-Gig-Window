@@ -35,7 +35,7 @@ app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(
 /* ---------------- Login ----------------
    We log in through the SHARED Electron session, so the auth cookie is stored
    in the session and automatically sent when the gig window loads gig.html. */
-ipcMain.handle('login', async (evt, { email, password }) => {
+ipcMain.handle('login', async (evt, { email, password, remember }) => {
   try {
     const r = await fetch(BASE_URL + '/api/auth/login', {
       method: 'POST',
@@ -54,17 +54,53 @@ ipcMain.handle('login', async (evt, { email, password }) => {
       const value = pair.slice(eq + 1).trim();
       const url = BASE_URL;
       try {
-        await session.defaultSession.cookies.set({
+        // When "remember" is on, set an explicit expiry so Electron keeps the
+        // cookie on disk across restarts; otherwise it's a session cookie that
+        // disappears when the app quits.
+        const cookieSpec = {
           url, name, value,
           domain: new URL(BASE_URL).hostname,
           path: '/', httpOnly: true, secure: BASE_URL.startsWith('https'),
-        });
+        };
+        if (remember) cookieSpec.expirationDate = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+        await session.defaultSession.cookies.set(cookieSpec);
       } catch (e) { /* non-fatal; the fetch below re-checks auth */ }
     }
     return { ok: true, user: data.user };
   } catch (e) {
     return { ok: false, error: 'Could not reach Spinlist. Check your connection.' };
   }
+});
+
+// On launch, check whether a remembered session cookie is still valid so the
+// DJ can skip the login screen.
+ipcMain.handle('restore-session', async () => {
+  try {
+    const cookies = await session.defaultSession.cookies.get({ url: BASE_URL });
+    if (!cookies || !cookies.length) return { ok: false };
+    const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+    const r = await fetch(BASE_URL + '/api/me', { headers: { Cookie: cookieHeader } });
+    if (!r.ok) return { ok: false };
+    const data = await r.json().catch(() => ({}));
+    if (!data || !data.user) return { ok: false };
+    return { ok: true, user: data.user };
+  } catch (e) { return { ok: false, offline: true }; }
+});
+
+// Log out: tell the server and clear the stored cookie(s).
+ipcMain.handle('logout', async () => {
+  try {
+    const cookies = await session.defaultSession.cookies.get({ url: BASE_URL });
+    const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+    await fetch(BASE_URL + '/api/auth/logout', { method: 'POST', headers: { Cookie: cookieHeader } });
+  } catch (_) {}
+  try {
+    const cookies = await session.defaultSession.cookies.get({ url: BASE_URL });
+    for (const c of cookies) {
+      await session.defaultSession.cookies.remove(BASE_URL, c.name);
+    }
+  } catch (_) {}
+  return { ok: true };
 });
 
 // Fetch the DJ's weddings + events for the picker (uses the session cookie).

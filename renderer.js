@@ -6,26 +6,46 @@ let GIGS = [];
 $('login-btn').addEventListener('click', doLogin);
 $('password').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
 
-async function doLogin() {
-  const email = $('email').value.trim();
-  const password = $('password').value;
+// On launch, try a remembered session so the DJ skips the login screen.
+tryRestoreSession();
+async function tryRestoreSession() {
   const msg = $('login-msg');
-  if (!email || !password) { msg.className = 'msg err'; msg.textContent = 'Enter your email and password.'; return; }
-  $('login-btn').disabled = true;
-  msg.className = 'msg muted'; msg.textContent = 'Signing in…';
-  const r = await window.spinlist.login(email, password);
-  $('login-btn').disabled = false;
-  if (!r.ok) { msg.className = 'msg err'; msg.textContent = r.error || 'Login failed.'; return; }
-  msg.className = 'msg ok'; msg.textContent = '';
-  $('login-who').textContent = r.user && (r.user.name || r.user.email) ? ('Signed in as ' + (r.user.name || r.user.email)) : 'Signed in';
+  if (msg) { msg.className = 'msg muted'; msg.textContent = 'Checking your saved sign-in…'; }
+  let r;
+  try { r = await window.spinlist.restoreSession(); } catch (_) { r = { ok: false }; }
+  if (r && r.ok && r.user) {
+    enterPicker(r.user);
+  } else if (msg) {
+    msg.textContent = '';
+  }
+}
+
+function enterPicker(user) {
+  $('login-who').textContent = user && (user.name || user.email) ? ('Signed in as ' + (user.name || user.email)) : 'Signed in';
   $('login-panel').classList.add('hide');
   $('picker-panel').classList.remove('hide');
   loadGigs();
 }
 
+async function doLogin() {
+  const email = $('email').value.trim();
+  const password = $('password').value;
+  const remember = $('remember-me') ? $('remember-me').checked : true;
+  const msg = $('login-msg');
+  if (!email || !password) { msg.className = 'msg err'; msg.textContent = 'Enter your email and password.'; return; }
+  $('login-btn').disabled = true;
+  msg.className = 'msg muted'; msg.textContent = 'Signing in…';
+  const r = await window.spinlist.login(email, password, remember);
+  $('login-btn').disabled = false;
+  if (!r.ok) { msg.className = 'msg err'; msg.textContent = r.error || 'Login failed.'; return; }
+  msg.className = 'msg ok'; msg.textContent = '';
+  enterPicker(r.user);
+}
+
 /* ---------- gig picker ---------- */
 $('refresh-btn').addEventListener('click', loadGigs);
-$('signout-btn').addEventListener('click', () => {
+$('signout-btn').addEventListener('click', async () => {
+  try { await window.spinlist.logout(); } catch (_) {}
   $('picker-panel').classList.add('hide');
   $('login-panel').classList.remove('hide');
   $('password').value = '';
